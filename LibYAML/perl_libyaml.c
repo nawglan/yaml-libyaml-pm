@@ -297,8 +297,13 @@ load_mapping(perl_yaml_loader_t *loader, char *tag)
     while ((key_node = load_node(loader))) {
         assert(SvPOK(key_node));
         value_node = load_node(loader);
-        hv_store_ent(
-            hash, sv_2mortal(key_node), value_node, 0
+        if (!hv_exists_ent(hash, key_node, 0)) {
+            hv_store_ent(
+                hash, sv_2mortal(key_node), value_node, 0
+            );
+        }
+        else warn("%s",
+            loader_error_msg(loader, form("duplicate key found for hash: '%s'", SvPV_nolen(key_node)))
         );
     }
 
